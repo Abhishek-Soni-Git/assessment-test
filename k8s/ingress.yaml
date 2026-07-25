@@ -6,12 +6,13 @@ metadata:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
-        - __YOUR_DOMAIN__
+        - app.mandelbulbtech.in
       secretName: hello-world-tls
   rules:
-    - host: __YOUR_DOMAIN__
+    - host: app.mandelbulbtech.in
       http:
         paths:
           - path: /

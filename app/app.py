@@ -1,0 +1,20 @@
+from flask import Flask
+import os
+import socket
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return {
+        "message": "Hello World from AKS!",
+        "hostname": socket.gethostname(),
+        "version": os.environ.get("APP_VERSION", "v1")
+    }
+
+@app.route("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)

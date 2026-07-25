@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: hello-world
-          image: __ACR_LOGIN_SERVER__/hello-world:__IMAGE_TAG__
+          image: aksdemoacrp5xwb4.azurecr.io/hello-world:c7ae07d
           ports:
             - containerPort: 8080
           readinessProbe:

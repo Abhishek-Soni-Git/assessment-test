@@ -162,6 +162,47 @@ curl https://<your-domain>/
 # {"message": "Hello World from AKS!", ...}
 ```
 
+## Human update: live HTTPS fix summary
+
+This section is intentionally written like an operator handoff note, so the next person can understand what was broken and what was fixed in production.
+
+### What was failing
+- Browser showed certificate warnings because a trusted Let's Encrypt certificate was not getting issued.
+- cert-manager HTTP-01 challenge was failing with timeout/404 during validation.
+
+### Root cause found
+- Ingress was using a self-signed issuer at one point, which is not trusted by public browsers.
+- ACME issuer config was pointing to staging endpoint previously.
+- Most important: Azure Load Balancer probe path for ingress was effectively checking a path that returned `404` on nodePort, which made external traffic unhealthy/unreachable even though in-cluster routing worked.
+
+### Fixes applied
+1. Switched Ingress to use `letsencrypt-prod` ClusterIssuer.
+2. Updated ClusterIssuer ACME server to production (`https://acme-v02.api.letsencrypt.org/directory`).
+3. Set HTTP-01 solver with `ingressClassName: nginx`.
+4. Set Azure LB health probe request path on ingress controller service to `/healthz`.
+5. Re-triggered certificate issuance by deleting old `hello-world-tls` Certificate resource.
+6. After certificate became ready, re-enabled HTTP to HTTPS redirect.
+
+### How HTTPS is working now
+1. DNS `A` record points domain to ingress public IP.
+2. NGINX Ingress receives traffic on ports `80/443`.
+3. cert-manager solves HTTP-01 challenge via Ingress and gets a trusted cert from Let's Encrypt.
+4. Certificate is stored in secret `hello-world-tls` and attached in Ingress TLS section.
+5. Browser connects over `https://` and sees a valid public CA certificate.
+
+### Quick checks for future debugging
+```bash
+kubectl get ingress -n default -o wide
+kubectl get certificate,certificaterequest,order,challenge -n default
+kubectl get svc ingress-nginx-controller -n ingress-nginx -o yaml
+```
+
+If issue repeats, verify these first:
+- Domain still resolves to current ingress public IP.
+- Ingress controller service still has annotation:
+  `service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz`
+- Certificate status is `READY=True`.
+
 ## Notes / assumptions
 - ACR pull uses AKS's managed identity (`AcrPull` role) — no registry credentials stored anywhere.
 - GitHub → Azure auth uses OIDC federated credentials, not long-lived secrets.

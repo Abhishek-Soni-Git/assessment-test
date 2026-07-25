@@ -39,6 +39,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   resource_group_name = data.azurerm_resource_group.this.name
   dns_prefix          = "${var.prefix}-aks"
   kubernetes_version  = var.kubernetes_version
+  oidc_issuer_enabled = true
 
   default_node_pool {
     name       = "system"

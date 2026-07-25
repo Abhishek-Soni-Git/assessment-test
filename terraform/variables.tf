@@ -7,7 +7,7 @@ variable "location" {
 variable "resource_group_name" {
   description = "Resource group name"
   type        = string
-  default     = "rg-aks-demo"
+  default     = "rg-assesment-test"
 }
 
 variable "prefix" {
@@ -17,9 +17,9 @@ variable "prefix" {
 }
 
 variable "kubernetes_version" {
-  description = "AKS Kubernetes version"
+  description = "AKS Kubernetes version (leave null to use Azure's current default)"
   type        = string
-  default     = "1.29"
+  default     = null
 }
 
 variable "node_count" {

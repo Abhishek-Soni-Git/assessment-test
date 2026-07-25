@@ -7,8 +7,8 @@ data "azurerm_resource_group" "this" {
 # ---------------------------------------------------------------------------
 resource "azurerm_log_analytics_workspace" "this" {
   name                = "${var.prefix}-law"
-  location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
 }
@@ -18,8 +18,8 @@ resource "azurerm_log_analytics_workspace" "this" {
 # ---------------------------------------------------------------------------
 resource "azurerm_container_registry" "this" {
   name                = "${var.prefix}acr${random_string.suffix.result}"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
   sku                 = var.acr_sku
   admin_enabled       = false
 }
@@ -35,8 +35,8 @@ resource "random_string" "suffix" {
 # ---------------------------------------------------------------------------
 resource "azurerm_kubernetes_cluster" "this" {
   name                = "${var.prefix}-aks"
-  location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
   dns_prefix          = "${var.prefix}-aks"
   kubernetes_version  = var.kubernetes_version
 
